@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Article Admin</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#f3f4f6;color:#111827}
+.header{background:#111827;color:#fff;padding:20px}
+.container{max-width:950px;margin:auto;padding:20px}
+.card{background:#fff;padding:20px;margin-bottom:18px;border-radius:12px;box-shadow:0 2px 8px #0001}
+h1{font-size:24px}
+h2{margin-bottom:15px}
+label{display:block;margin:12px 0 7px;font-weight:bold}
+input,textarea,select{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:8px;font-size:15px}
+textarea{min-height:180px;line-height:1.6}
+button{border:0;padding:12px 18px;border-radius:8px;margin-top:15px;cursor:pointer;font-weight:bold}
+.primary{background:#2563eb;color:#fff}
+.success{background:#16a34a;color:#fff}
+.secondary{background:#6b7280;color:#fff}
+.status{margin-top:12px;padding:12px;border-radius:8px;display:none}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.info{background:#eff6ff;color:#1e40af;padding:14px;border-radius:8px;line-height:1.5}
+@media(max-width:600px){.row{grid-template-columns:1fr}.container{padding:12px}}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+<h1>🤖 AI Article Admin Panel</h1>
+<p>News, Stories & Automatic Publishing</p>
+</div>
+
+<div class="container">
+
+<div class="card">
+
+<h2>AI Article Generator</h2>
+
+<div class="info">
+Topic লিখুন এবং Generate with AI চাপুন।
+</div>
+
+<div class="row">
+
+<div>
+<label>Article Type</label>
+
+<select id="type">
+<option value="news">News</option>
+<option value="story">Story</option>
+<option value="technology">Technology</option>
+<option value="sports">Sports</option>
+<option value="entertainment">Entertainment</option>
+</select>
+</div>
+
+<div>
+<label>Language</label>
+
+<select id="language">
+<option value="bn">Bangla</option>
+<option value="en">English</option>
+</select>
+</div>
+
+</div>
+
+<label>Topic</label>
+
+<input id="topic"
+placeholder="Example: বাংলাদেশের আজকের প্রযুক্তির খবর">
+
+<label>Length</label>
+
+<select id="length">
+<option value="500">500 words</option>
+<option value="1000">1000 words</option>
+<option value="1500">1500 words</option>
+<option value="2000">2000 words</option>
+</select>
+
+<button id="generateButton"
+class="primary"
+onclick="generateArticle()">
+🤖 Generate with AI
+</button>
+
+<div id="status" class="status"></div>
+
+</div>
+
+
+<div class="card">
+
+<h2>⏰ Automatic Publishing</h2>
+
+<label>
+<input type="checkbox" id="autoPublish">
+Enable automatic daily publishing
+</label>
+
+<label>Publishing Time</label>
+
+<input type="time" id="publishTime" value="09:00">
+
+<button class="success" onclick="saveSettings()">
+Save Settings
+</button>
+
+<div id="settingsStatus" class="status"></div>
+
+</div>
+
+
+<div class="card">
+
+<h2>📝 Article Preview</h2>
+
+<label>Title</label>
+
+<input id="articleTitle"
+placeholder="AI title">
+
+<label>Summary</label>
+
+<textarea id="articleSummary"
+placeholder="AI summary"></textarea>
+
+<label>Content</label>
+
+<textarea id="articleContent"
+placeholder="AI article"></textarea>
+
+<button class="primary" onclick="publishArticle()">
+📢 Publish Article
+</button>
+
+<button class="secondary" onclick="clearArticle()">
+Clear
+</button>
+
+<div id="publishStatus" class="status"></div>
+
+</div>
+
+</div>
+
+
+<script>
+
+async function generateArticle(){
+
+const topic=document.getElementById("topic").value.trim();
+const type=document.getElementById("type").value;
+const language=document.getElementById("language").value;
+const length=document.getElementById("length").value;
+
+const button=document.getElementById("generateButton");
+const status=document.getElementById("status");
+
+if(!topic){
+
+showStatus(status,"Please enter a topic.","error");
+return;
+
+}
+
+button.disabled=true;
+button.innerText="⏳ AI is writing...";
+
+showStatus(
+status,
+"AI article তৈরি হচ্ছে...",
+"loading"
+);
+
+try{
+
+const response=await fetch("/api/generate",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+topic,
+type,
+language,
+length
+})
+
+});
+
+const data=await response.json();
+
+if(!response.ok){
+
+throw new Error(
+data.error || "AI generation failed"
+);
+
+}
+
+document.getElementById("articleTitle").value=
+data.article.title || "";
+
+document.getElementById("articleSummary").value=
+data.article.summary || "";
+
+document.getElementById("articleContent").value=
+data.article.content || "";
+
+showStatus(
+status,
+"✓ AI article তৈরি হয়েছে।",
+"success"
+);
+
+}catch(error){
+
+showStatus(
+status,
+"❌ "+error.message,
+"error"
+);
+
+}finally{
+
+button.disabled=false;
+button.innerText="🤖 Generate with AI";
+
+}
+
+}
+
+
+function showStatus(element,message,type){
+
+element.style.display="block";
+element.className="status";
+
+if(type==="success"){
+element.style.background="#f0fdf4";
+element.style.color="#166534";
+}
+
+if(type==="error"){
+element.style.background="#fef2f2";
+element.style.color="#991b1b";
+}
+
+if(type==="loading"){
+element.style.background="#eff6ff";
+element.style.color="#1e40af";
+}
+
+element.innerText=message;
+
+}
+
+
+function saveSettings(){
+
+const enabled=
+document.getElementById("autoPublish").checked;
+
+const time=
+document.getElementById("publishTime").value;
+
+localStorage.setItem(
+"autoPublish",
+enabled
+);
+
+localStorage.setItem(
+"publishTime",
+time
+);
+
+showStatus(
+document.getElementById("settingsStatus"),
+"✓ Settings saved.",
+"success"
+);
+
+}
+
+
+function publishArticle(){
+
+const title=
+document.getElementById("articleTitle").value.trim();
+
+const summary=
+document.getElementById("articleSummary").value.trim();
+
+const content=
+document.getElementById("articleContent").value.trim();
+
+if(!title || !content){
+
+showStatus(
+document.getElementById("publishStatus"),
+"Title and content are required.",
+"error"
+);
+
+return;
+
+}
+
+const article={
+title,
+summary,
+content,
+createdAt:new Date().toISOString()
+};
+
+localStorage.setItem(
+"latestArticle",
+JSON.stringify(article)
+);
+
+showStatus(
+document.getElementById("publishStatus"),
+"✓ Article saved.",
+"success"
+);
+
+}
+
+
+function clearArticle(){
+
+document.getElementById("articleTitle").value="";
+document.getElementById("articleSummary").value="";
+document.getElementById("articleContent").value="";
+
+}
+
+
+</script>
+
+</body>
+</html>
