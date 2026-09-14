@@ -208,6 +208,100 @@
 <footer>
   © 2026 AI Daily News & Stories
 </footer>
+<script>
 
+async function loadArticles(){
+
+try{
+
+const response =
+await fetch(
+"/api/articles"
+);
+
+const data =
+await response.json();
+
+if(
+!data.success ||
+!data.articles
+)return;
+
+
+const container =
+document.getElementById(
+"articles"
+);
+
+container.innerHTML = "";
+
+
+data.articles.forEach(
+article => {
+
+const item =
+document.createElement(
+"article"
+);
+
+item.className =
+"article";
+
+item.innerHTML = `
+
+<div class="content">
+
+<h3>
+${escapeHtml(article.title)}
+</h3>
+
+<p>
+${escapeHtml(article.summary || "")}
+</p>
+
+<a
+class="btn"
+href="/article.html?slug=${encodeURIComponent(article.slug)}"
+>
+Read Article
+</a>
+
+</div>
+
+`;
+
+container.appendChild(
+item
+);
+
+});
+
+}catch(error){
+
+console.error(error);
+
+}
+
+}
+
+
+function escapeHtml(text){
+
+const div =
+document.createElement(
+"div"
+);
+
+div.textContent =
+text || "";
+
+return div.innerHTML;
+
+}
+
+
+loadArticles();
+
+</script>
 </body>
 </html>
