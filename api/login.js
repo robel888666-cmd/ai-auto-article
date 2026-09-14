@@ -1,6 +1,5 @@
 import { SignJWT } from "jose";
 
-
 function getSecret() {
 
   return new TextEncoder().encode(
@@ -9,8 +8,10 @@ function getSecret() {
 
 }
 
-
-export default async function handler(req, res) {
+export default async function handler(
+  req,
+  res
+) {
 
   if (req.method !== "POST") {
 
@@ -20,14 +21,12 @@ export default async function handler(req, res) {
 
   }
 
-
   try {
 
     const {
       username,
       password
     } = req.body || {};
-
 
     if (
       username !==
@@ -37,61 +36,38 @@ export default async function handler(req, res) {
     ) {
 
       return res.status(401).json({
-
         error:
           "Invalid username or password"
-
       });
 
     }
 
-
     const token =
       await new SignJWT({
-
         role: "admin",
-
-        username:
-          username
-
+        username
       })
-
       .setProtectedHeader({
         alg: "HS256"
       })
-
       .setIssuedAt()
-
-      .setExpirationTime(
-        "7d"
-      )
-
-      .sign(
-        getSecret()
-      );
-
+      .setExpirationTime("7d")
+      .sign(getSecret());
 
     res.setHeader(
       "Set-Cookie",
 
-      `admin_token=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=604800`
+      `admin_token=${encodeURIComponent(token)}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=604800`
     );
 
-
     return res.status(200).json({
-
       success: true
-
     });
-
 
   } catch (error) {
 
     return res.status(500).json({
-
-      error:
-        error.message
-
+      error: error.message
     });
 
   }
