@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1"
+>
+
+<title>Admin Dashboard</title>
+
+<style>
+
+*{
+box-sizing:border-box;
+margin:0;
+padding:0
+}
+
+body{
+font-family:Arial,sans-serif;
+background:#f3f4f6;
+color:#111827
+}
+
+.header{
+background:#111827;
+color:white;
+padding:18px
+}
+
+.header-inner{
+max-width:1100px;
+margin:auto;
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:10px
+}
+
+.header h1{
+font-size:22px
+}
+
+.logout{
+background:#dc2626;
+color:white;
+border:0;
+padding:10px 14px;
+border-radius:8px;
+cursor:pointer
+}
+
+.container{
+max-width:1100px;
+margin:auto;
+padding:18px
+}
+
+.card{
+background:white;
+padding:18px;
+margin-bottom:18px;
+border-radius:12px;
+box-shadow:0 2px 8px #0001
+}
+
+.stats{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:12px;
+margin-bottom:18px
+}
+
+.stat{
+background:white;
+padding:18px;
+border-radius:12px;
+box-shadow:0 2px 8px #0001
+}
+
+.stat-number{
+font-size:28px;
+font-weight:bold;
+margin-top:5px
+}
+
+.filters{
+display:flex;
+gap:10px;
+margin-bottom:15px;
+flex-wrap:wrap
+}
+
+input,
+textarea,
+select{
+width:100%;
+padding:11px;
+border:1px solid #d1d5db;
+border-radius:8px;
+font-size:15px
+}
+
+.filters input{
+flex:1;
+min-width:200px
+}
+
+.filters select{
+width:auto;
+min-width:150px
+}
+
+button{
+border:0;
+padding:10px 14px;
+border-radius:8px;
+cursor:pointer;
+font-weight:bold
+}
+
+.blue{
+background:#2563eb;
+color:white
+}
+
+.green{
+background:#16a34a;
+color:white
+}
+
+.red{
+background:#dc2626;
+color:white
+}
+
+.gray{
+background:#6b7280;
+color:white
+}
+
+.article{
+border:1px solid #e5e7eb;
+padding:15px;
+border-radius:10px;
+margin-bottom:12px
+}
+
+.article-title{
+font-size:18px;
+font-weight:bold;
+margin-bottom:7px
+}
+
+.meta{
+font-size:13px;
+color:#6b7280;
+margin-bottom:10px
+}
+
+.summary{
+color:#4b5563;
+line-height:1.5;
+margin-bottom:12px
+}
+
+.actions{
+display:flex;
+gap:7px;
+flex-wrap:wrap
+}
+
+.editor{
+display:none
+}
+
+.editor textarea{
+min-height:180px;
+margin-bottom:10px
+}
+
+.editor input,
+.editor select{
+margin-bottom:10px
+}
+
+.status{
+padding:12px;
+border-radius:8px;
+margin-bottom:15px;
+display:none
+}
+
+.success-status{
+background:#dcfce7;
+color:#166534
+}
+
+.error-status{
+background:#fee2e2;
+color:#991b1b
+}
+
+.loading-status{
+background:#dbeafe;
+color:#1e40af
+}
+
+.empty{
+text-align:center;
+padding:30px;
+color:#6b7280
+}
+
+@media(max-width:600px){
+
+.stats{
+grid-template-columns:1fr
+}
+
+.header-inner{
+align-items:flex-start
+}
+
+.actions button{
+width:100%
+}
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="header">
+
+<div class="header-inner">
+
+<div>
+
+<h1>
+🔐 AI Article Admin
+</h1>
+
+<div>
+Article Management Dashboard
+</div>
+
+</div>
+
+<button
+class="logout"
+onclick="logout()"
+>
+Logout
+</button>
+
+</div>
+
+</div>
+
+
+<div class="container">
+
+
+<div
+id="globalStatus"
+class="status"
+></div>
+
+
+<!-- STATS -->
+
+<div class="stats">
+
+<div class="stat">
+
+<div>
+Total Articles
+</div>
+
+<div
+id="totalArticles"
+class="stat-number"
+>
+0
+</div>
+
+</div>
+
+
+<div class="stat">
+
+<div>
+Published
+</div>
+
+<div
+id="publishedArticles"
+class="stat-number"
+>
+0
+</div>
+
+</div>
+
+
+<div class="stat">
+
+<div>
+Draft
+</div>
+
+<div
+id="draftArticles"
+class="stat-number"
+>
+0
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ARTICLE LIST -->
+
+<div class="card">
+
+<h2>
+📋 Articles
+</h2>
+
+<br>
+
+
+<div class="filters">
+
+<input
+id="search"
+placeholder="Search article..."
+oninput="renderArticles()"
+>
+
+
+<select
+id="filter"
+onchange="renderArticles()"
+>
+
+<option value="all">
+All
+</option>
+
+<option value="published">
+Published
+</option>
+
+<option value="draft">
+Draft
+</option>
+
+</select>
+
+
+<button
+class="blue"
+onclick="loadArticles()"
+>
+🔄 Refresh
+</button>
+
+</div>
+
+
+<div id="articleList">
+
+<div class="empty">
+Loading articles...
+</div>
+
+</div>
+
+</div>
+
+
+<!-- EDITOR -->
+
+<div
+id="editor"
+class="card editor"
+>
+
+<h2>
+✏️ Edit Article
+</h2>
+
+<br>
+
+
+<input
+id="editId"
+type="hidden"
+>
+
+
+<label>
+Title
+</label>
+
+<input
+id="editTitle"
+>
+
+
+<label>
+Summary
+</label>
+
+<textarea
+id="editSummary"
+></textarea>
+
+
+<label>
+Content
+</label>
+
+<textarea
+id="editContent"
+></textarea>
+
+
+<label>
+Category
+</label>
+
+<select id="editCategory">
+
+<option value="news">
+News
+</option>
+
+<option value="story">
+Story
+</option>
+
+<option value="technology">
+Technology
+</option>
+
+<option value="sports">
+Sports
+</option>
+
+<option value="entertainment">
+Entertainment
+</option>
+
+</select>
+
+
+<label>
+SEO Title
+</label>
+
+<input
+id="editSeoTitle"
+>
+
+
+<label>
+SEO Description
+</label>
+
+<textarea
+id="editSeoDescription"
+></textarea>
+
+
+<label>
+Image URL
+</label>
+
+<input
+id="editImage"
+placeholder="https://..."
+>
+
+
+<br>
+
+
+<button
+class="green"
+onclick="saveArticle()"
+>
+💾 Save Changes
+</button>
+
+<button
+class="gray"
+onclick="closeEditor()"
+>
+Cancel
+</button>
+
+
+</div>
+
+
+</div>
+
+
+<script>
+
+let articles = [];
+
+
+/* =========================
+   AUTH CHECK
+========================= */
+
+async function checkLogin(){
+
+try{
+
+const response =
+await fetch(
+"/api/auth",
+{
+credentials:"include"
+}
+);
+
+if(!response.ok){
+
+window.location.href =
+"/login.html";
+
+return false;
+
+}
+
+return true;
+
+}catch(error){
+
+window.location.href =
+"/login.html";
+
+return false;
+
+}
+
+}
+
+
+/* =========================
+   LOAD ARTICLES
+========================= */
+
+async function loadArticles(){
+
+const ok =
+await checkLogin();
+
+if(!ok) return;
+
+
+showStatus(
+"Loading articles...",
+"loading"
+);
+
+
+try{
+
+const response =
+await fetch(
+"/api/admin-articles",
+{
+credentials:"include"
+}
+);
+
+
+if(response.status===401){
+
+window.location.href =
+"/login.html";
+
+return;
+
+}
+
+
+const data =
+await response.json();
+
+
+if(!response.ok){
+
+throw new Error(
+data.error ||
+"Failed to load articles"
+);
+
+}
+
+
+articles =
+data.articles || [];
+
+
+updateStats();
+
+renderArticles();
+
+
+hideStatus();
+
+
+}catch(error){
+
+showStatus(
+"❌ "+error.message,
+"error"
+);
+
+}
+
+}
+
+
+/* =========================
+   STATS
+========================= */
+
+function updateStats(){
+
+const total =
+articles.length;
+
+
+const published =
+articles.filter(
+a => a.published
+).length;
+
+
+const draft =
+total - published;
+
+
+document.getElementById(
+"totalArticles"
+).innerText =
+total;
+
+
+document.getElementById(
+"publishedArticles"
+).innerText =
+published;
+
+
+document.getElementById(
+"draftArticles"
+).innerText =
+draft;
+
+}
+
+
+/* =========================
+   RENDER
+========================= */
+
+function renderArticles(){
+
+const container =
+document.getElementById(
+"articleList"
+);
+
+
+const search =
+document.getElementById(
+"search"
+).value
+.toLowerCase()
+.trim();
+
+
+const filter =
+document.getElementById(
+"filter"
+).value;
+
+
+let list =
+articles.filter(
+article => {
+
+const matchesSearch =
+(article.title || "")
+.toLowerCase()
+.includes(search);
+
+
+let matchesFilter =
+true;
+
+
+if(filter==="published"){
+
+matchesFilter =
+article.published === true;
+
+}
+
+
+if(filter==="draft"){
+
+matchesFilter =
+article.published === false;
+
+}
+
+
+return (
+matchesSearch &&
+matchesFilter
+);
+
+});
+
+
+if(list.length===0){
+
+container.innerHTML =
+`<div class="empty">
+No articles found.
+</div>`;
+
+return;
+
+}
+
+
+container.innerHTML =
+list.map(
+article => {
+
+const status =
+article.published
+? "Published"
+: "Draft";
+
+
+const buttonText =
+article.published
+? "🚫 Unpublish"
+: "✅ Publish";
+
+
+const buttonClass =
+article.published
+? "gray"
+: "green";
+
+
+return `
+
+<div class="article">
+
+<div class="article-title">
+${escapeHtml(article.title)}
+</div>
+
+<div class="meta">
+
+Category:
+${escapeHtml(article.category || "news")}
+
+&nbsp; | &nbsp;
+
+Status:
+${status}
+
+&nbsp; | &nbsp;
+
+ID:
+${article.id}
+
+</div>
+
+<div class="summary">
+
+${escapeHtml(
+article.summary || ""
+)}
+
+</div>
+
+<div class="actions">
+
+<button
+class="blue"
+onclick="editArticle(${article.id})"
+>
+✏️ Edit
+</button>
+
+<button
+class="${buttonClass}"
+onclick="togglePublish(
+${article.id},
+${article.published}
+)"
+>
+${buttonText}
+</button>
+
+<button
+class="red"
+onclick="deleteArticle(${article.id})"
+>
+🗑️ Delete
+</button>
+
+</div>
+
+</div>
+
+`;
+
+}).join("");
+
+}
+
+
+/* =========================
+   EDIT
+========================= */
+
+function editArticle(id){
+
+const article =
+articles.find(
+a => Number(a.id) === Number(id)
+);
+
+
+if(!article){
+
+alert(
+"Article not found"
+);
+
+return;
+
+}
+
+
+document.getElementById(
+"editId"
+).value =
+article.id;
+
+
+document.getElementById(
+"editTitle"
+).value =
+article.title || "";
+
+
+document.getElementById(
+"editSummary"
+).value =
+article.summary || "";
+
+
+document.getElementById(
+"editContent"
+).value =
+article.content || "";
+
+
+document.getElementById(
+"editCategory"
+).value =
+article.category || "news";
+
+
+document.getElementById(
+"editSeoTitle"
+).value =
+article.seo_title ||
+article.title ||
+"";
+
+
+document.getElementById(
+"editSeoDescription"
+).value =
+article.seo_description ||
+article.summary ||
+"";
+
+
+document.getElementById(
+"editImage"
+).value =
+article.image_url || "";
+
+
+document.getElementById(
+"editor"
+).style.display =
+"block";
+
+
+window.scrollTo({
+top:document.body.scrollHeight,
+behavior:"smooth"
+});
+
+}
+
+
+/* =========================
+   SAVE EDIT
+========================= */
+
+async function saveArticle(){
+
+const id =
+document.getElementById(
+"editId"
+).value;
+
+
+const title =
+document.getElementById(
+"editTitle"
+).value.trim();
+
+
+const summary =
+document.getElementById(
+"editSummary"
+).value.trim();
+
+
+const content =
+document.getElementById(
+"editContent"
+).value.trim();
+
+
+const category =
+document.getElementById(
+"editCategory"
+).value;
+
+
+const seoTitle =
+document.getElementById(
+"editSeoTitle"
+).value.trim();
+
+
+const seoDescription =
+document.getElementById(
+"editSeoDescription"
+).value.trim();
+
+
+const image =
+document.getElementById(
+"editImage"
+).value.trim();
+
+
+if(!title || !content){
+
+alert(
+"Title and content are required."
+);
+
+return;
+
+}
+
+
+showStatus(
+"Saving article...",
+"loading"
+);
+
+
+try{
+
+const response =
+await fetch(
+"/api/admin-update",
+{
+
+method:"POST",
+
+credentials:"include",
+
+headers:{
+"Content-Type":
+"application/json"
+},
+
+body:JSON.stringify({
+
+id,
+
+title,
+
+summary,
+
+content,
+
+category,
+
+seo_title:seoTitle,
+
+seo_description:
+seoDescription,
+
+image_url:image
+
+})
+
+});
+
+
+if(response.status===401){
+
+window.location.href =
+"/login.html";
+
+return;
+
+}
+
+
+const data =
+await response.json();
+
+
+if(!response.ok){
+
+throw new Error(
+data.error ||
+"Update failed"
+);
+
+}
+
+
+showStatus(
+"✓ Article updated successfully.",
+"success"
+);
+
+
+closeEditor();
+
+await loadArticles();
+
+
+}catch(error){
+
+showStatus(
+"❌ "+error.message,
+"error"
+);
+
+}
+
+}
+
+
+/* =========================
+   PUBLISH / UNPUBLISH
+========================= */
+
+async function togglePublish(
+id,
+currentStatus
+){
+
+const action =
+currentStatus
+? "unpublish"
+: "publish";
+
+
+if(
+!confirm(
+"Are you sure you want to " +
+action +
+" this article?"
+)
+){
+
+return;
+
+}
+
+
+try{
+
+const response =
+await fetch(
+"/api/admin-publish",
+{
+
+method:"POST",
+
+credentials:"include",
+
+headers:{
+"Content-Type":
+"application/json"
+},
+
+body:JSON.stringify({
+
+id,
+
+published:
+!currentStatus
+
+})
+
+});
+
+
+if(response.status===401){
+
+window.location.href =
+"/login.html";
+
+return;
+
+}
+
+
+const data =
+await response.json();
+
+
+if(!response.ok){
+
+throw new Error(
+data.error ||
+"Publish action failed"
+);
+
+}
+
+
+showStatus(
+currentStatus
+? "✓ Article unpublished."
+: "✓ Article published.",
+"success"
+);
+
+
+await loadArticles();
+
+
+}catch(error){
+
+showStatus(
+"❌ "+error.message,
+"error"
+);
+
+}
+
+}
+
+
+/* =========================
+   DELETE
+========================= */
+
+async function deleteArticle(id){
+
+if(
+!confirm(
+"Delete this article permanently?"
+)
+){
+
+return;
+
+}
+
+
+try{
+
+const response =
+await fetch(
+"/api/admin-delete",
+{
+
+method:"POST",
+
+credentials:"include",
+
+headers:{
+"Content-Type":
+"application/json"
+},
+
+body:JSON.stringify({
+id
+})
+
+});
+
+
+if(response.status===401){
+
+window.location.href =
+"/login.html";
+
+return;
+
+}
+
+
+const data =
+await response.json();
+
+
+if(!response.ok){
+
+throw new Error(
+data.error ||
+"Delete failed"
+);
+
+}
+
+
+showStatus(
+"✓ Article deleted.",
+"success"
+);
+
+
+await loadArticles();
+
+
+}catch(error){
+
+showStatus(
+"❌ "+error.message,
+"error"
+);
+
+}
+
+}
+
+
+/* =========================
+   CLOSE EDITOR
+========================= */
+
+function closeEditor(){
+
+document.getElementById(
+"editor"
+).style.display =
+"none";
+
+}
+
+
+/* =========================
+   LOGOUT
+========================= */
+
+async function logout(){
+
+await fetch(
+"/api/logout",
+{
+method:"POST",
+credentials:"include"
+}
+);
+
+window.location.href =
+"/login.html";
+
+}
+
+
+/* =========================
+   STATUS
+========================= */
+
+function showStatus(
+message,
+type
+){
+
+const element =
+document.getElementById(
+"globalStatus"
+);
+
+element.style.display =
+"block";
+
+element.className =
+"status " +
+type +
+"-status";
+
+element.innerText =
+message;
+
+}
+
+
+function hideStatus(){
+
+document.getElementById(
+"globalStatus"
+).style.display =
+"none";
+
+}
+
+
+/* =========================
+   HTML SECURITY
+========================= */
+
+function escapeHtml(text){
+
+const div =
+document.createElement(
+"div"
+);
+
+div.textContent =
+text || "";
+
+return div.innerHTML;
+
+}
+
+
+/* =========================
+   START
+========================= */
+
+checkLogin()
+.then(
+ok => {
+
+if(ok){
+
+loadArticles();
+
+}
+
+});
+
+</script>
+
+</body>
+
+</html>
